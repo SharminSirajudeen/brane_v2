@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Brane Neuron Configuration",
+  "type": "object",
+  "required": ["neuron_id", "model", "runtime", "synapses", "axon"],
+  "properties": {
+    "neuron_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]{3,50}$",
+      "description": "Unique ID for the Neuron"
+    },
+    "display_name": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Human-readable name shown in Brane GUI"
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["backend", "params"],
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": ["llama.cpp", "ollama", "onnx", "cloud"],
+          "description": "Inference engine to run the model"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "gpu_enabled": { "type": "boolean", "default": false },
+            "threads": { "type": "integer", "minimum": 1, "maximum": 64 },
+            "context_length": { "type": "integer", "minimum": 512, "maximum": 32768 }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "required": ["name", "source"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_.:-]{3,64}$",
+          "description": "Model name or alias"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["embedded", "local_path", "ollama", "remote_url"],
+          "description": "Where the model weights are located"
+        },
+        "path": {
+          "type": "string",
+          "description": "File path or URL for weights if not embedded"
+        },
+        "quantization": {
+          "type": "string",
+          "enum": ["Q2", "Q3", "Q4", "Q5", "Q8", "BF16"],
+          "default": "Q4"
+        },
+        "fallback": {
+          "type": "string",
+          "description": "Optional fallback model name"
+        }
+      },
+      "additionalProperties": false
+    },
+    "synapses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "enabled"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{2,40}$",
+            "description": "Plugin identifier"
+          },
+          "enabled": { "type": "boolean" },
+          "config": {
+            "type": "object",
+            "description": "Plugin-specific config",
+            "additionalProperties": true
+          }
+        }
+      },
+      "description": "Optional skill plugins"
+    },
+    "axon": {
+      "type": "object",
+      "required": ["rag_enabled", "storage"],
+      "properties": {
+        "rag_enabled": { "type": "boolean", "default": false },
+        "storage": {
+          "type": "string",
+          "enum": ["local", "gdrive", "dropbox", "custom_path"],
+          "default": "local"
+        },
+        "path": { "type": "string", "description": "Path if storage is local or custom" },
+        "max_docs": { "type": "integer", "minimum": 0, "default": 1000 }
+      }
+    },
+    "mcp": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "servers": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" },
+          "description": "List of MCP server endpoints"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

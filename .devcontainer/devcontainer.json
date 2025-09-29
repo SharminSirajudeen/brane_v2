@@ -1,0 +1,52 @@
+{
+  "name": "Brane Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/desktop-lite:1": {
+      "password": "brane",
+      "webPort": "6080",
+      "vncPort": "5901"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "dsznajder.es7-react-js-snippets",
+        "formulahendry.auto-rename-tag"
+      ],
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": true
+        }
+      }
+    }
+  },
+  "forwardPorts": [3000, 5173, 6080, 5901, 11434],
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "pnpm install",
+  "remoteUser": "node",
+  "containerEnv": {
+    "DISPLAY": ":1",
+    "ELECTRON_DISABLE_SANDBOX": "1"
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder}/models,target=/workspace/models,type=bind,consistency=cached"
+  ],
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined",
+    "--shm-size=2gb"
+  ]
+}

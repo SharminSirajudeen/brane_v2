@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Electron
+electron-builder.yml
+release/
+
+# Models (large files)
+models/*.gguf
+models/*.bin
+models/*.onnx
+
+# Axon storage
+axon_storage/
+*.faiss
+*.pickle
+
+# Test coverage
+coverage/
+*.lcov
+
+# Temporary files
+tmp/
+temp/
+.cache/
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Misc
+.eslintcache
+.prettierignore
