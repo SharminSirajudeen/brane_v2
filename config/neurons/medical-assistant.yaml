@@ -1,0 +1,325 @@
+# Medical Assistant Neuron - HIPAA Compliant Configuration
+# Privacy Tier 0: ALL PROCESSING LOCAL - NO PHI LEAVES THE DEVICE
+# Last Updated: 2025-01-01
+# Compliance: HIPAA, HITECH Act
+
+metadata:
+  id: "medical-assistant-v1"
+  name: "HIPAA-Compliant Medical Assistant"
+  version: "1.0.0"
+  description: "Privacy-first medical assistant for clinical decision support, patient care coordination, and medical research assistance"
+  target_industry: "healthcare"
+  certification_level: "HIPAA_COMPLIANT"
+
+# CRITICAL: Tier 0 ensures all PHI stays local
+privacy_tier: 0  # LOCAL ONLY - Required for HIPAA compliance
+
+model:
+  # Using Ollama with medical-tuned models for complete local processing
+  provider: "ollama"
+  model: "medllama2:13b"  # Medical-tuned Llama 2 variant
+  endpoint: "http://localhost:11434"
+
+  # Conservative settings for medical accuracy
+  temperature: 0.1  # Low temperature for consistency and accuracy
+  max_tokens: 4096  # Extended for detailed medical explanations
+  top_p: 0.95
+  top_k: 40
+
+  # Fallback configuration - DISABLED for PHI protection
+  fallback:
+    enabled: false  # NO CLOUD FALLBACK for patient data
+    reason: "PHI must remain local per HIPAA requirements"
+
+prompts:
+  system: |
+    You are a HIPAA-compliant medical assistant designed to support healthcare professionals.
+
+    CORE PRINCIPLES:
+    1. Patient Safety First: Always prioritize patient safety in recommendations
+    2. Evidence-Based: Base all medical guidance on peer-reviewed literature and clinical guidelines
+    3. Privacy Protected: Never store, transmit, or expose PHI outside the local environment
+    4. Clinical Support: You assist but never replace clinical judgment
+
+    MEDICAL EXPERTISE:
+    - Comprehensive knowledge of medical terminology, anatomy, physiology, and pathophysiology
+    - Current with major clinical guidelines (ACC/AHA, IDSA, NCCN, etc.)
+    - Understanding of diagnostic reasoning and differential diagnosis
+    - Familiarity with common medications, dosing, and drug interactions
+    - Knowledge of ICD-10, CPT coding, and medical documentation standards
+
+    COMMUNICATION STYLE:
+    - Use precise medical terminology when communicating with clinicians
+    - Provide lay explanations when patient education is needed
+    - Structure responses using SOAP note format when appropriate
+    - Include relevant clinical decision rules and scoring systems
+
+    SAFETY PROTOCOLS:
+    - Always remind users that recommendations are for educational/support purposes
+    - Flag potential red flags or emergency conditions immediately
+    - Suggest appropriate specialist consultations when indicated
+    - Include contraindications and warnings for all medication recommendations
+
+    DATA HANDLING:
+    - Process all patient data locally without external transmission
+    - Automatically redact PHI elements in any logs or outputs
+    - Maintain audit trail for all patient data access
+    - Implement automatic session timeout after 15 minutes of inactivity
+
+    LIMITATIONS DISCLOSURE:
+    - Clearly state when a question requires direct clinical examination
+    - Acknowledge when latest research may supersede current knowledge
+    - Defer to specialist expertise for complex subspecialty questions
+
+    Remember: You are a clinical decision support tool, not a replacement for medical judgment.
+
+  user_prefix: "Healthcare Professional Query: "
+
+  # Context injection for current medical guidelines
+  context_injection: |
+    Current Date: {current_date}
+    Facility Type: {facility_type}
+    Specialty Context: {specialty}
+    Local Formulary Available: {formulary_status}
+
+axon:
+  enabled: true
+  storage_path: "./storage/axon/medical"
+
+  # Medical-specific embedding model
+  embedding_model: "biobert-base-cased-v1.2"  # BioBERT for medical text
+  chunk_size: 512  # Optimized for medical literature paragraphs
+  chunk_overlap: 128  # Ensure context continuity
+  top_k: 5  # Return top 5 relevant chunks
+
+  # Encrypted storage for PHI
+  encryption:
+    enabled: true
+    algorithm: "AES-256-GCM"
+    key_derivation: "PBKDF2"
+
+  # Supported medical document types
+  document_types:
+    - "clinical_guidelines"
+    - "drug_monographs"
+    - "patient_histories"  # Encrypted
+    - "lab_references"
+    - "imaging_reports"
+    - "treatment_protocols"
+
+tools:
+  # Medical Terminology & Reference Lookup
+  - id: "medical_terminology"
+    name: "Medical Terminology Database"
+    enabled: true
+    config:
+      database: "local_medical_terms"
+      include_synonyms: true
+      include_lay_terms: true
+      sources:
+        - "SNOMED-CT"
+        - "ICD-10"
+        - "LOINC"
+        - "RxNorm"
+
+  # Drug Interaction Checker
+  - id: "drug_interaction"
+    name: "Drug Interaction Checker"
+    enabled: true
+    config:
+      database: "local_drug_db"
+      check_levels:
+        - "contraindicated"
+        - "major"
+        - "moderate"
+        - "minor"
+      include_food_interactions: true
+      include_disease_interactions: true
+      check_duplicate_therapy: true
+
+  # Clinical Calculator Suite
+  - id: "clinical_calculators"
+    name: "Clinical Decision Tools"
+    enabled: true
+    config:
+      calculators:
+        - "CHADS2-VASc"
+        - "HAS-BLED"
+        - "MELD"
+        - "CHA2DS2-VASc"
+        - "Wells_DVT"
+        - "Wells_PE"
+        - "PERC"
+        - "qSOFA"
+        - "GFR_calculators"
+        - "BMI"
+        - "BSA"
+      auto_suggest: true
+
+  # Lab Reference Ranges
+  - id: "lab_reference"
+    name: "Laboratory Reference Database"
+    enabled: true
+    config:
+      include_pediatric: true
+      include_geriatric: true
+      unit_conversion: true
+      critical_value_alerts: true
+
+  # Clinical Trial Search (de-identified)
+  - id: "clinical_trials"
+    name: "Clinical Trial Matcher"
+    enabled: true
+    config:
+      source: "local_mirror"  # Local mirror of ClinicalTrials.gov
+      update_frequency: "weekly"
+      match_criteria:
+        - "condition"
+        - "intervention"
+        - "age"
+        - "gender"
+        - "location"
+      exclude_pii: true
+
+  # Medical Image Analysis Assistant
+  - id: "imaging_assistant"
+    name: "Radiology Report Analyzer"
+    enabled: true
+    config:
+      modalities:
+        - "CT"
+        - "MRI"
+        - "X-Ray"
+        - "Ultrasound"
+      report_templates: true
+      finding_extraction: true
+      follow_up_recommendations: true
+
+  # PHI Redaction Tool
+  - id: "phi_redactor"
+    name: "PHI/PII Redaction Engine"
+    enabled: true
+    config:
+      redact_elements:
+        - "names"
+        - "dates"
+        - "locations"
+        - "medical_record_numbers"
+        - "ssn"
+        - "phone_numbers"
+        - "email_addresses"
+        - "ip_addresses"
+      safe_harbor_method: true
+      audit_redactions: true
+
+memory:
+  type: "session"  # Session-based only, no persistent memory for PHI
+  max_conversation_length: 50
+  session_timeout_minutes: 15
+
+  # Automatic PHI scrubbing
+  phi_scrubbing:
+    enabled: true
+    method: "safe_harbor"
+    audit_log: true
+
+context_window: 16384  # Large context for medical documents
+max_tokens: 4096
+
+# HIPAA Compliance Settings
+compliance:
+  framework: "HIPAA"
+
+  # Access controls
+  access_control:
+    authentication_required: true
+    multi_factor: true
+    role_based: true
+    minimum_role: "healthcare_provider"
+
+  # Audit logging
+  audit:
+    enabled: true
+    level: "full"
+    log_access: true
+    log_modifications: true
+    log_exports: false  # Exports disabled
+    retention_days: 2555  # 7 years per HIPAA
+
+  # Data handling
+  data_handling:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    automatic_logoff_minutes: 15
+    clipboard_monitoring: true
+    screenshot_prevention: true
+
+  # Breach prevention
+  breach_prevention:
+    monitor_unusual_access: true
+    alert_on_bulk_access: true
+    prevent_mass_download: true
+
+  # Business Associate Agreement
+  baa_required: false  # Not needed for local-only
+
+  # Data retention
+  data_retention:
+    session_data_hours: 24
+    audit_logs_years: 7
+    automatic_purge: true
+
+# Performance & Resource Settings
+performance:
+  max_memory_gb: 16
+  cpu_threads: 8
+  gpu_enabled: true  # For faster local inference
+  cache_size_mb: 2048
+
+# Monitoring & Alerts
+monitoring:
+  health_check_interval_seconds: 60
+  alert_on_errors: true
+  alert_on_phi_exposure_attempt: true
+  metrics_collection: "local_only"
+
+# Validation Rules
+validation:
+  required_fields:
+    - "patient_context"
+    - "clinical_setting"
+  prohibited_outputs:
+    - "definitive_diagnosis"
+    - "prescription_orders"
+    - "stop_medication_orders"
+  max_response_length: 5000
+
+# Emergency Protocols
+emergency:
+  keywords:
+    - "chest pain"
+    - "difficulty breathing"
+    - "suicide"
+    - "overdose"
+    - "stroke symptoms"
+    - "severe bleeding"
+  response_prefix: "⚠️ URGENT: This may be a medical emergency. Call 911 or seek immediate medical attention."
+
+# Integration Points (all local)
+integrations:
+  ehr_systems:
+    - type: "epic"
+      enabled: false  # Requires separate configuration
+    - type: "cerner"
+      enabled: false
+  pacs_systems:
+    enabled: false
+  lab_systems:
+    enabled: false
+
+# Quality Assurance
+quality_assurance:
+  medical_accuracy_threshold: 0.95
+  citation_required: true
+  guideline_adherence: true
+  peer_review_sampling_rate: 0.1  # 10% sampling for QA

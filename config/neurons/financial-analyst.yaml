@@ -1,0 +1,621 @@
+# Financial Analyst Neuron - SOC2 & SEC Compliant
+# Privacy Tier: Configurable (1 or 2 based on data sensitivity)
+# Last Updated: 2025-01-01
+# Compliance: SOC2 Type II, SEC, PCI-DSS, GDPR
+
+metadata:
+  id: "financial-analyst-v1"
+  name: "Enterprise Financial Analysis Assistant"
+  version: "1.0.0"
+  description: "Advanced financial analysis, risk assessment, and regulatory compliance assistant with real-time market data integration"
+  target_industry: "finance"
+  certification_level: "SOC2_TYPE_II"
+
+# Tier configurable based on data sensitivity
+# Tier 1: Private cloud for material non-public information (MNPI)
+# Tier 2: Public API for public market data analysis
+privacy_tier: 1  # Default to private for financial data
+
+model:
+  # Primary: GPT-4 with Azure deployment for SOC2 compliance
+  provider: "azure_openai"
+  model: "gpt-4-turbo-2024"
+  endpoint: "https://finance-secure.openai.azure.com"
+  api_key_env: "AZURE_OPENAI_FINANCE_KEY"
+  deployment_name: "financial-gpt4-turbo"
+
+  # Balanced for analytical precision and insight generation
+  temperature: 0.4  # Moderate for balanced analysis and creativity
+  max_tokens: 8192  # Extended for comprehensive reports
+  top_p: 0.90
+  top_k: 45
+
+  # Fallback to Claude for complex reasoning
+  fallback:
+    enabled: true
+    provider: "anthropic"
+    model: "claude-3-sonnet-20240229"
+    endpoint: "https://finance-private.anthropic.com"
+    api_key_env: "ANTHROPIC_FINANCE_KEY"
+    condition: "primary_error_or_complex_analysis"
+    soc2_compliant: true
+
+prompts:
+  system: |
+    You are an expert financial analyst assistant designed for enterprise financial operations, investment analysis, and regulatory compliance.
+
+    CORE COMPETENCIES:
+    1. Financial Analysis: Advanced quantitative and qualitative analysis across all asset classes
+    2. Risk Management: Comprehensive risk assessment, VaR, stress testing, and scenario analysis
+    3. Regulatory Compliance: Deep knowledge of SEC, FINRA, Basel III, MiFID II, and global regulations
+    4. Market Intelligence: Real-time market analysis, trend identification, and predictive insights
+    5. Data Integrity: Ensuring accuracy, completeness, and reliability of financial data
+
+    FINANCIAL EXPERTISE:
+    - Fundamental Analysis:
+      * Financial statement analysis (10-K, 10-Q, 8-K)
+      * Ratio analysis and peer comparison
+      * DCF modeling and valuation
+      * DuPont analysis and profitability drivers
+      * Working capital and cash flow analysis
+      * Credit analysis and rating methodologies
+
+    - Technical Analysis:
+      * Chart patterns and trend analysis
+      * Technical indicators (RSI, MACD, Bollinger Bands)
+      * Volume analysis and market microstructure
+      * Support/resistance levels
+      * Elliott Wave and Fibonacci analysis
+
+    - Quantitative Finance:
+      * Option pricing models (Black-Scholes, Binomial, Monte Carlo)
+      * Portfolio optimization (Markowitz, Black-Litterman)
+      * Factor models (Fama-French, Arbitrage Pricing Theory)
+      * Risk metrics (VaR, CVaR, Greeks, Duration, Convexity)
+      * Statistical arbitrage and pairs trading
+      * Machine learning applications in finance
+
+    - Asset Classes:
+      * Equities: Common/preferred, ADRs, ETFs
+      * Fixed Income: Government, Corporate, Municipal, MBS/ABS
+      * Derivatives: Options, Futures, Swaps, Structured Products
+      * Alternatives: Private Equity, Hedge Funds, Real Estate, Commodities
+      * Crypto Assets: Bitcoin, Ethereum, DeFi protocols
+      * FX: Spot, Forwards, Options, Cross-currency basis
+
+    ANALYTICAL FRAMEWORK:
+    - Always start with data quality validation
+    - Apply appropriate financial models based on asset type and objective
+    - Consider multiple scenarios and sensitivity analysis
+    - Incorporate both systematic and idiosyncratic risks
+    - Account for market regime changes and structural breaks
+    - Validate results against market consensus and sanity checks
+
+    REGULATORY AWARENESS:
+    - Securities regulations:
+      * Insider trading restrictions (10b-5)
+      * Market manipulation rules
+      * Best execution requirements
+      * Reg NMS and market structure
+      * Form ADV and disclosure requirements
+
+    - Banking regulations:
+      * Basel III capital requirements
+      * Dodd-Frank and Volcker Rule
+      * Stress testing (CCAR, DFAST)
+      * Liquidity coverage ratio (LCR)
+      * Net stable funding ratio (NSFR)
+
+    - International compliance:
+      * MiFID II (Europe)
+      * GDPR for financial data
+      * FATCA and CRS reporting
+      * Anti-money laundering (AML)
+      * Know Your Customer (KYC)
+
+    DATA HANDLING PROTOCOLS:
+    - Material Non-Public Information (MNPI):
+      * Flag and isolate MNPI immediately
+      * Maintain information barriers
+      * Track access and distribution
+      * Implement trading restrictions
+
+    - Market Data:
+      * Validate data sources and timestamps
+      * Check for corporate actions adjustments
+      * Handle missing data appropriately
+      * Maintain audit trail for data lineage
+
+    OUTPUT STANDARDS:
+    - Quantitative Analysis:
+      * Include confidence intervals and error margins
+      * Provide sensitivity tables
+      * Show assumption dependencies
+      * Include backtesting results where applicable
+
+    - Investment Recommendations:
+      * Clear thesis with supporting evidence
+      * Risk/reward analysis
+      * Catalysts and timeline
+      * Exit strategies and stop-losses
+      * Compliance with research disclaimers
+
+    - Risk Reports:
+      * VaR at multiple confidence levels
+      * Stress test scenarios
+      * Correlation matrices
+      * Liquidity analysis
+      * Concentration risks
+
+    - Regulatory Filings:
+      * Ensure accuracy and completeness
+      * Include required disclosures
+      * Meet filing deadlines
+      * XBRL tagging where required
+
+    ETHICAL STANDARDS:
+    - Maintain objectivity and independence
+    - Disclose conflicts of interest
+    - Ensure fair and balanced analysis
+    - Protect confidential information
+    - Comply with CFA Code of Ethics
+
+    LIMITATIONS:
+    - Not investment advice for retail investors
+    - Historical analysis may not predict future performance
+    - Model risk and parameter uncertainty
+    - Data latency and market microstructure noise
+    - Regulatory interpretations may vary by jurisdiction
+
+    Remember: Financial analysis requires both quantitative rigor and qualitative judgment. Always consider the broader economic context and market dynamics.
+
+  user_prefix: "Financial Query: "
+
+  # Context injection for market conditions
+  context_injection: |
+    Current Date: {current_date}
+    Market Hours: {market_status}
+    Major Indices: {index_levels}
+    VIX Level: {vix}
+    10Y Treasury: {ten_year_yield}
+    Fed Funds Rate: {fed_rate}
+    Economic Cycle: {cycle_phase}
+
+axon:
+  enabled: true
+  storage_path: "./storage/axon/finance"
+
+  # Financial-specific embedding model
+  embedding_model: "finbert-base"  # FinBERT for financial text
+  chunk_size: 1024  # Optimized for financial documents
+  chunk_overlap: 256
+  top_k: 7  # Multiple relevant chunks for comprehensive analysis
+
+  # Encryption for sensitive financial data
+  encryption:
+    enabled: true
+    algorithm: "AES-256-GCM"
+    key_derivation: "Argon2id"
+    mnpi_tagging: true  # Material non-public information
+
+  # Financial document types
+  document_types:
+    - "financial_statements"
+    - "earnings_transcripts"
+    - "analyst_reports"
+    - "regulatory_filings"
+    - "market_data"
+    - "economic_indicators"
+    - "risk_reports"
+    - "portfolio_holdings"  # Encrypted
+    - "trading_strategies"  # Encrypted
+    - "client_portfolios"   # Encrypted
+
+tools:
+  # Market Data Integration
+  - id: "market_data"
+    name: "Real-Time Market Data Feed"
+    enabled: true
+    config:
+      providers:
+        - "bloomberg_terminal"  # Requires license
+        - "refinitiv_eikon"    # Requires license
+        - "alpha_vantage"      # Free tier available
+        - "yahoo_finance"      # Backup
+      data_types:
+        - "quotes"
+        - "historical_prices"
+        - "options_chain"
+        - "fundamentals"
+        - "economic_calendar"
+        - "earnings_calendar"
+      refresh_rate_seconds: 15
+      after_hours: true
+
+  # Financial Calculator Suite
+  - id: "financial_calculators"
+    name: "Quantitative Finance Toolkit"
+    enabled: true
+    config:
+      calculators:
+        valuation:
+          - "dcf_model"
+          - "comparable_analysis"
+          - "precedent_transactions"
+          - "asset_based_valuation"
+          - "option_pricing"
+        risk:
+          - "var_historical"
+          - "var_parametric"
+          - "var_monte_carlo"
+          - "expected_shortfall"
+          - "stress_testing"
+          - "greeks_calculator"
+        portfolio:
+          - "efficient_frontier"
+          - "sharpe_ratio"
+          - "information_ratio"
+          - "treynor_ratio"
+          - "alpha_beta"
+          - "correlation_matrix"
+        fixed_income:
+          - "yield_to_maturity"
+          - "duration_convexity"
+          - "z_spread"
+          - "oas_calculator"
+      precision: "high"
+
+  # SEC EDGAR Integration
+  - id: "sec_edgar"
+    name: "SEC Filing Analyzer"
+    enabled: true
+    config:
+      filing_types:
+        - "10-K"
+        - "10-Q"
+        - "8-K"
+        - "DEF 14A"
+        - "S-1"
+        - "13F"
+        - "Schedule 13D/G"
+      features:
+        - "xbrl_parsing"
+        - "financial_extraction"
+        - "peer_comparison"
+        - "trend_analysis"
+        - "red_flag_detection"
+      real_time_alerts: true
+
+  # Risk Management System
+  - id: "risk_management"
+    name: "Enterprise Risk Analytics"
+    enabled: true
+    config:
+      risk_types:
+        - "market_risk"
+        - "credit_risk"
+        - "liquidity_risk"
+        - "operational_risk"
+        - "model_risk"
+      methodologies:
+        - "historical_simulation"
+        - "monte_carlo"
+        - "parametric"
+        - "stress_scenarios"
+      reporting:
+        - "risk_dashboard"
+        - "limit_monitoring"
+        - "breach_alerts"
+      basel_iii_compliant: true
+
+  # Portfolio Analytics
+  - id: "portfolio_analytics"
+    name: "Portfolio Management System"
+    enabled: true
+    config:
+      analytics:
+        - "performance_attribution"
+        - "risk_attribution"
+        - "factor_analysis"
+        - "style_analysis"
+        - "optimization"
+        - "rebalancing"
+      benchmarks:
+        - "sp500"
+        - "russell_indices"
+        - "msci_indices"
+        - "custom_benchmark"
+      reporting:
+        - "daily_pnl"
+        - "risk_metrics"
+        - "exposure_reports"
+
+  # Compliance Monitoring
+  - id: "compliance_monitor"
+    name: "Regulatory Compliance System"
+    enabled: true
+    config:
+      monitoring:
+        - "insider_trading"
+        - "wash_sales"
+        - "position_limits"
+        - "best_execution"
+        - "market_manipulation"
+      regulations:
+        - "sec_rules"
+        - "finra_rules"
+        - "cftc_rules"
+        - "basel_iii"
+        - "mifid_ii"
+      alerts:
+        - "real_time"
+        - "daily_summary"
+        - "exception_reports"
+
+  # Economic Data
+  - id: "economic_data"
+    name: "Economic Indicators Database"
+    enabled: true
+    config:
+      sources:
+        - "federal_reserve"
+        - "bls"
+        - "bea"
+        - "ecb"
+        - "imf"
+      indicators:
+        - "gdp"
+        - "inflation"
+        - "employment"
+        - "interest_rates"
+        - "money_supply"
+        - "trade_balance"
+      forecasting: true
+      nowcasting: true
+
+  # Trading Analytics
+  - id: "trading_analytics"
+    name: "Trade Analysis System"
+    enabled: true
+    config:
+      analytics:
+        - "transaction_cost_analysis"
+        - "slippage_analysis"
+        - "market_impact"
+        - "best_execution"
+        - "algo_performance"
+      order_types:
+        - "market"
+        - "limit"
+        - "stop"
+        - "iceberg"
+        - "vwap"
+        - "twap"
+
+  # Credit Analysis
+  - id: "credit_analysis"
+    name: "Credit Risk Assessment"
+    enabled: true
+    config:
+      models:
+        - "merton_model"
+        - "creditmetrics"
+        - "kmv_model"
+        - "credit_scoring"
+      data_sources:
+        - "credit_ratings"
+        - "cds_spreads"
+        - "financial_ratios"
+        - "market_indicators"
+      outputs:
+        - "pd_estimation"  # Probability of default
+        - "lgd_calculation"  # Loss given default
+        - "ead_assessment"  # Exposure at default
+
+  # Report Generator
+  - id: "report_generator"
+    name: "Financial Report Builder"
+    enabled: true
+    config:
+      report_types:
+        - "investment_memo"
+        - "risk_report"
+        - "performance_report"
+        - "regulatory_filing"
+        - "client_presentation"
+      formats:
+        - "pdf"
+        - "excel"
+        - "powerpoint"
+        - "interactive_dashboard"
+      branding: true
+      compliance_disclaimers: true
+
+memory:
+  type: "hierarchical"  # Client -> Portfolio -> Position level
+  max_conversation_length: 200
+  client_segregation: true  # Prevent cross-client contamination
+
+  # MNPI handling
+  mnpi_handling:
+    enabled: true
+    isolation: true
+    tracking: true
+    expiry_based_on_public_disclosure: true
+
+context_window: 32768  # Large context for financial analysis
+max_tokens: 8192
+
+# Compliance Settings
+compliance:
+  framework: ["SOC2_TYPE_II", "SEC", "FINRA", "GDPR", "PCI_DSS"]
+
+  # Access controls
+  access_control:
+    authentication_required: true
+    multi_factor: true
+    role_based: true
+    minimum_role: "registered_representative"
+    licensing_verification: true
+    insider_list_checking: true
+
+  # Audit requirements
+  audit:
+    enabled: true
+    level: "full"
+    log_all_analysis: true
+    log_data_access: true
+    log_recommendations: true
+    log_trades: true
+    retention_years: 7  # SEC requirement
+
+  # Data handling
+  data_handling:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    automatic_logoff_minutes: 20
+    data_loss_prevention: true
+    screen_capture_prevention: true
+    watermarking: true
+
+  # Data residency
+  data_residency:
+    regions_allowed:
+      - "us-east"
+      - "us-west"
+      - "eu-central"  # GDPR compliant DC
+    data_localization: true
+    cross_border_restrictions: true
+
+  # MNPI controls
+  mnpi_controls:
+    detection: true
+    isolation: true
+    restricted_list_checking: true
+    pre_clearance_required: true
+
+  # SOC2 specific
+  soc2:
+    security: true
+    availability: true
+    processing_integrity: true
+    confidentiality: true
+    privacy: true
+    annual_audit: true
+    penetration_testing: true
+
+  # Data retention
+  data_retention:
+    market_data_days: 30
+    client_data_years: 7
+    trading_records_years: 7
+    audit_logs_years: 7
+    automatic_archival: true
+
+# Performance Settings
+performance:
+  max_memory_gb: 64  # Financial models need memory
+  cpu_threads: 32
+  gpu_enabled: true  # For ML models and Monte Carlo
+  cache_size_mb: 8192
+  parallel_analysis_threads: 8
+
+# High Availability
+high_availability:
+  enabled: true
+  failover_regions:
+    - "us-east-2"
+    - "us-west-1"
+  replication: "synchronous"
+  backup_frequency_minutes: 15
+  disaster_recovery_rto_minutes: 15  # Recovery time objective
+  disaster_recovery_rpo_minutes: 5   # Recovery point objective
+
+# Monitoring & Alerts
+monitoring:
+  health_check_interval_seconds: 30
+  performance_metrics: true
+  error_alerting: true
+  compliance_alerting: true
+  market_risk_alerting: true
+  latency_threshold_ms: 100
+  uptime_sla: 0.999  # 99.9% uptime
+
+# Integration Points
+integrations:
+  trading_platforms:
+    - type: "fix_protocol"
+      enabled: false  # Requires configuration
+    - type: "bloomberg_terminal"
+      enabled: false
+    - type: "reuters_eikon"
+      enabled: false
+
+  portfolio_management:
+    - type: "blackrock_aladdin"
+      enabled: false
+    - type: "charles_river"
+      enabled: false
+    - type: "simcorp"
+      enabled: false
+
+  risk_systems:
+    - type: "msci_riskmetrics"
+      enabled: false
+    - type: "axioma"
+      enabled: false
+    - type: "numerix"
+      enabled: false
+
+  data_providers:
+    - type: "bloomberg"
+      enabled: false
+    - type: "refinitiv"
+      enabled: false
+    - type: "sp_global"
+      enabled: false
+
+  accounting_systems:
+    - type: "geneva"
+      enabled: false
+    - type: "eagle"
+      enabled: false
+
+# Specialized Features
+specialized_features:
+  algorithmic_trading:
+    enabled: true
+    strategy_backtesting: true
+    paper_trading: true
+    live_trading: false  # Requires additional config
+
+  machine_learning:
+    enabled: true
+    models:
+      - "price_prediction"
+      - "sentiment_analysis"
+      - "anomaly_detection"
+      - "portfolio_optimization"
+    auto_retraining: true
+
+  blockchain_analytics:
+    enabled: true
+    networks:
+      - "bitcoin"
+      - "ethereum"
+      - "defi_protocols"
+    on_chain_analysis: true
+
+# Output Validation
+validation:
+  required_elements:
+    - "data_sources"
+    - "methodology"
+    - "assumptions"
+    - "disclaimers"
+  prohibited_content:
+    - "guaranteed_returns"
+    - "insider_information"
+    - "market_manipulation"
+  calculation_verification: true
+  regulatory_review: true

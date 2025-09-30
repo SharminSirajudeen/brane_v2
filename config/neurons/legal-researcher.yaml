@@ -1,0 +1,450 @@
+# Legal Research Assistant Neuron - Attorney-Client Privilege Protected
+# Privacy Tier 1: PRIVATE CLOUD with BAA/DPA
+# Last Updated: 2025-01-01
+# Compliance: ABA Model Rules, GDPR, CCPA
+
+metadata:
+  id: "legal-researcher-v1"
+  name: "Privileged Legal Research Assistant"
+  version: "1.0.0"
+  description: "Advanced legal research assistant with attorney-client privilege protection, case law analysis, and brief drafting support"
+  target_industry: "legal"
+  certification_level: "ATTORNEY_CLIENT_PRIVILEGE"
+
+# Tier 1: Private cloud deployment with legal data protection agreements
+privacy_tier: 1  # Private cloud with BAA/DPA agreements
+
+model:
+  # Primary: Claude for superior legal reasoning and analysis
+  provider: "anthropic"
+  model: "claude-3-opus-20240229"  # Best for complex legal analysis
+  endpoint: "https://private-legal.anthropic.com"  # Private deployment
+  api_key_env: "ANTHROPIC_LEGAL_API_KEY"
+
+  # Optimized for legal reasoning
+  temperature: 0.3  # Balanced for analytical precision with creative argumentation
+  max_tokens: 8192  # Extended for comprehensive legal analysis
+  top_p: 0.92
+  top_k: 50
+
+  # Fallback to Azure OpenAI with BAA
+  fallback:
+    enabled: true
+    provider: "azure_openai"
+    model: "gpt-4-turbo"
+    endpoint: "https://legal-azure.openai.azure.com"
+    api_key_env: "AZURE_OPENAI_LEGAL_KEY"
+    condition: "primary_timeout_or_error"
+    baa_signed: true
+
+prompts:
+  system: |
+    You are an expert legal research assistant designed to support attorneys and legal professionals in their practice.
+
+    CORE COMPETENCIES:
+    1. Legal Analysis: Deep understanding of legal reasoning, precedent analysis, and statutory interpretation
+    2. Jurisdiction Awareness: Knowledge of federal and state law variations, conflict of laws principles
+    3. Citation Mastery: Perfect Bluebook and local citation formatting
+    4. Privilege Protection: Automatic detection and protection of attorney-client and work product privileges
+    5. Ethical Compliance: Adherence to ABA Model Rules of Professional Conduct
+
+    LEGAL EXPERTISE:
+    - Comprehensive knowledge of:
+      * Constitutional law and civil rights
+      * Contract law and commercial transactions
+      * Tort law and personal injury
+      * Criminal law and procedure
+      * Corporate law and governance
+      * Intellectual property law
+      * Employment and labor law
+      * Real estate and property law
+      * Tax law fundamentals
+      * Administrative law and regulatory compliance
+      * International law and treaties
+
+    - Procedural mastery:
+      * Federal Rules of Civil Procedure
+      * Federal Rules of Criminal Procedure
+      * Federal Rules of Evidence
+      * Federal Rules of Appellate Procedure
+      * State procedural variations
+      * Local court rules and standing orders
+
+    RESEARCH METHODOLOGY:
+    - Start with primary sources (constitutions, statutes, regulations)
+    - Identify controlling and persuasive authority
+    - Apply appropriate standards of review
+    - Consider circuit splits and jurisdictional differences
+    - Shepardize/KeyCite all citations for current validity
+    - Distinguish adverse authority effectively
+    - Find analogous cases from other jurisdictions when needed
+
+    WRITING STANDARDS:
+    - Use precise legal terminology and terms of art
+    - Structure arguments using IRAC/CREAC methodology
+    - Employ persuasive techniques appropriate to the audience (court vs. opposing counsel)
+    - Maintain objective analysis for research memos
+    - Use advocacy tone for briefs and motions
+    - Include pinpoint citations for all propositions
+    - Follow jurisdiction-specific formatting rules
+
+    PRIVILEGE PROTECTION:
+    - Automatically flag content containing:
+      * Attorney mental impressions and strategies
+      * Client confidential communications
+      * Work product materials
+      * Settlement discussions (FRE 408)
+      * Plea negotiations (FRE 410)
+    - Maintain privilege log for all protected materials
+    - Implement ethical walls for conflict checking
+
+    ETHICAL OBLIGATIONS:
+    - Never provide legal advice to non-clients
+    - Maintain absolute client confidentiality
+    - Identify potential conflicts of interest
+    - Ensure competent representation through thorough research
+    - Update analysis for changes in law
+    - Disclose directly adverse authority
+    - Avoid frivolous arguments (Rule 11 sanctions)
+
+    OUTPUT FORMATS:
+    - Legal memoranda: Objective analysis with question presented, brief answer, facts, discussion, conclusion
+    - Motion practice: Persuasive brief with introduction, statement of facts, argument, conclusion
+    - Case summaries: Holdings, reasoning, procedural history, significance
+    - Contract analysis: Term identification, risk assessment, negotiation points
+    - Statutory research: Plain meaning, legislative history, regulatory guidance
+
+    LIMITATIONS & DISCLAIMERS:
+    - This is a research tool, not a substitute for legal judgment
+    - Always verify citations and current validity
+    - Consult local counsel for jurisdiction-specific issues
+    - Consider recent developments not in training data
+    - Factor in practical/strategic considerations beyond pure law
+
+    Remember: Excellence in legal research requires both comprehensive analysis and practical wisdom.
+
+  user_prefix: "Legal Professional Query: "
+
+  # Context for jurisdiction and practice area
+  context_injection: |
+    Current Date: {current_date}
+    Jurisdiction: {jurisdiction}
+    Practice Area: {practice_area}
+    Court Level: {court_level}
+    Applicable Rules: {local_rules}
+
+axon:
+  enabled: true
+  storage_path: "./storage/axon/legal"
+
+  # Legal-specific embedding model
+  embedding_model: "legal-bert-base-uncased"  # Legal-BERT for case law
+  chunk_size: 768  # Larger chunks for legal documents
+  chunk_overlap: 256  # Significant overlap for legal context
+  top_k: 10  # More results for comprehensive research
+
+  # Encryption for privileged materials
+  encryption:
+    enabled: true
+    algorithm: "AES-256-GCM"
+    key_derivation: "Argon2id"
+    privilege_tagging: true
+
+  # Legal document types
+  document_types:
+    - "cases"
+    - "statutes"
+    - "regulations"
+    - "briefs"
+    - "contracts"
+    - "discovery_materials"  # Extra encryption
+    - "client_communications"  # Privileged
+    - "work_product"  # Privileged
+    - "expert_reports"
+    - "deposition_transcripts"
+
+tools:
+  # Case Law Research
+  - id: "case_law_search"
+    name: "Case Law Database"
+    enabled: true
+    config:
+      databases:
+        - "westlaw_private"  # Private API with DPA
+        - "lexis_advance"    # Private API with DPA
+        - "fastcase"
+        - "google_scholar"   # Public fallback
+      search_features:
+        - "natural_language"
+        - "boolean"
+        - "citation"
+        - "party_name"
+      jurisdiction_filter: true
+      date_filter: true
+      court_level_filter: true
+      keycite_shepardize: true
+      headnote_search: true
+
+  # Statutory Research
+  - id: "statutory_research"
+    name: "Statute & Regulation Database"
+    enabled: true
+    config:
+      sources:
+        - "us_code"
+        - "cfr"
+        - "state_statutes"
+        - "municipal_codes"
+      features:
+        - "legislative_history"
+        - "amendments_tracking"
+        - "effective_dates"
+        - "cross_references"
+      annotation_links: true
+
+  # Citation Formatter
+  - id: "citation_formatter"
+    name: "Legal Citation Assistant"
+    enabled: true
+    config:
+      formats:
+        - "bluebook_21st"
+        - "alwd_7th"
+        - "state_specific"
+      features:
+        - "auto_abbreviation"
+        - "parallel_citations"
+        - "pinpoint_pages"
+        - "short_form_generation"
+        - "signal_selection"
+      validation: true
+
+  # Brief Analyzer
+  - id: "brief_analyzer"
+    name: "Brief Analysis Tool"
+    enabled: true
+    config:
+      analysis_types:
+        - "argument_structure"
+        - "citation_density"
+        - "precedent_strength"
+        - "logical_flow"
+        - "counterargument_identification"
+      readability_metrics: true
+      jurisdiction_compliance: true
+
+  # Conflict Checker
+  - id: "conflict_checker"
+    name: "Ethical Conflict Scanner"
+    enabled: true
+    config:
+      check_types:
+        - "client_conflicts"
+        - "issue_conflicts"
+        - "positional_conflicts"
+      databases:
+        - "client_matter_db"
+        - "adverse_party_db"
+      alert_level: "immediate"
+
+  # Contract Analyzer
+  - id: "contract_analyzer"
+    name: "Contract Review Assistant"
+    enabled: true
+    config:
+      analysis_features:
+        - "term_extraction"
+        - "obligation_mapping"
+        - "risk_assessment"
+        - "missing_provisions"
+        - "market_comparison"
+      clause_library: true
+      negotiation_suggestions: true
+
+  # Deadline Calculator
+  - id: "deadline_calculator"
+    name: "Legal Deadline Computer"
+    enabled: true
+    config:
+      rule_sets:
+        - "frcp"
+        - "frap"
+        - "state_rules"
+        - "local_rules"
+      features:
+        - "holiday_awareness"
+        - "backward_calculation"
+        - "chain_deadlines"
+        - "covid_extensions"
+      alert_integration: true
+
+  # Privilege Logger
+  - id: "privilege_logger"
+    name: "Privilege Protection System"
+    enabled: true
+    config:
+      detection:
+        - "attorney_client"
+        - "work_product"
+        - "joint_defense"
+        - "common_interest"
+      logging_required: true
+      redaction_capable: true
+      waiver_prevention: true
+
+  # Legal Forms Generator
+  - id: "forms_generator"
+    name: "Legal Forms Assistant"
+    enabled: true
+    config:
+      form_types:
+        - "complaints"
+        - "motions"
+        - "discovery"
+        - "contracts"
+        - "corporate"
+      jurisdiction_specific: true
+      auto_fill_client_data: true
+      signature_blocks: true
+
+memory:
+  type: "matter_based"  # Segregated by legal matter
+  max_conversation_length: 100
+  matter_isolation: true  # Prevent cross-matter contamination
+
+  # Privilege preservation
+  privilege_preservation:
+    enabled: true
+    auto_tag: true
+    segregation: true
+
+context_window: 32768  # Large context for legal documents
+max_tokens: 8192
+
+# Legal Compliance Settings
+compliance:
+  framework: ["ABA_MODEL_RULES", "GDPR", "CCPA"]
+
+  # Access controls
+  access_control:
+    authentication_required: true
+    multi_factor: true
+    role_based: true
+    minimum_role: "licensed_attorney"
+    bar_number_verification: true
+
+  # Audit requirements
+  audit:
+    enabled: true
+    level: "full"
+    log_research_queries: true
+    log_document_access: true
+    log_privilege_materials: true
+    retention_years: 10  # Typical legal retention
+
+  # Data handling
+  data_handling:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    automatic_logoff_minutes: 30
+    matter_segregation: true
+    conflict_walls: true
+
+  # Privilege protection
+  privilege_protection:
+    automatic_detection: true
+    logging_required: true
+    inadvertent_disclosure_prevention: true
+    clawback_provisions: true
+
+  # Business Associate Agreement / Data Processing Agreement
+  agreements:
+    baa_required: false  # Not HIPAA
+    dpa_required: true   # For GDPR compliance
+    custom_legal_services_agreement: true
+
+  # Data retention and destruction
+  data_retention:
+    active_matter_years: "indefinite"
+    closed_matter_years: 10
+    privileged_materials: "indefinite"
+    automatic_purge: false  # Manual review required
+    litigation_hold_capable: true
+
+# Performance Settings
+performance:
+  max_memory_gb: 32  # Legal documents can be large
+  cpu_threads: 16
+  gpu_enabled: true
+  cache_size_mb: 4096
+  parallel_research_threads: 4
+
+# Quality Assurance
+quality_assurance:
+  citation_accuracy_threshold: 0.99  # Near-perfect citation accuracy
+  legal_reasoning_review: true
+  precedent_validation: true
+  ethics_check: true
+  malpractice_prevention: true
+
+# Integration Points
+integrations:
+  practice_management:
+    - type: "clio"
+      enabled: false  # Requires configuration
+    - type: "mycase"
+      enabled: false
+    - type: "practicepanther"
+      enabled: false
+
+  research_platforms:
+    - type: "westlaw"
+      enabled: false  # Requires subscription
+    - type: "lexis"
+      enabled: false
+    - type: "bloomberg_law"
+      enabled: false
+
+  document_management:
+    - type: "imanage"
+      enabled: false
+    - type: "netdocuments"
+      enabled: false
+
+  time_billing:
+    - type: "bills"
+      enabled: false
+    - type: "timesolv"
+      enabled: false
+
+# Specialized Features
+specialized_features:
+  multi_jurisdictional:
+    enabled: true
+    conflict_checking: true
+    choice_of_law: true
+
+  litigation_support:
+    enabled: true
+    discovery_management: true
+    exhibit_tracking: true
+    deposition_prep: true
+
+  transactional_support:
+    enabled: true
+    due_diligence: true
+    closing_checklists: true
+    entity_formation: true
+
+# Output Validation
+validation:
+  required_elements:
+    - "legal_authority"
+    - "jurisdiction"
+    - "date_verification"
+  prohibited_content:
+    - "guarantee_outcome"
+    - "specific_legal_advice"
+    - "unauthorized_practice"
+  citation_format_check: true
+  ethics_review: true
