@@ -1,0 +1,218 @@
+/* Custom Animations */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes orbit {
+    from {
+        transform: rotate(0deg) translateX(150px) rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg) translateX(150px) rotate(-360deg);
+    }
+}
+
+@keyframes orbit-reverse {
+    from {
+        transform: rotate(0deg) translateX(150px) rotate(0deg);
+    }
+    to {
+        transform: rotate(-360deg) translateX(150px) rotate(360deg);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 1s ease-out;
+}
+
+.animate-fade-in-up {
+    animation: fade-in-up 1s ease-out;
+}
+
+/* Orbital Animation */
+.orbit-item {
+    top: 50%;
+    left: 50%;
+    transform-origin: center;
+    will-change: transform;
+}
+
+.orbit-item[data-orbit="1"] {
+    animation: orbit 20s linear infinite;
+}
+
+.orbit-item[data-orbit="2"] {
+    animation: orbit 20s linear infinite;
+    animation-delay: -4s;
+}
+
+.orbit-item[data-orbit="3"] {
+    animation: orbit 20s linear infinite;
+    animation-delay: -8s;
+}
+
+.orbit-item[data-orbit="4"] {
+    animation: orbit 20s linear infinite;
+    animation-delay: -12s;
+}
+
+.orbit-item[data-orbit="5"] {
+    animation: orbit 20s linear infinite;
+    animation-delay: -16s;
+}
+
+/* Glassmorphism Effects */
+.glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0066FF;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0052CC;
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(90deg, #0066FF, #10B981, #0066FF);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+    0%, 100% {
+        background-position: 0% center;
+    }
+    50% {
+        background-position: 100% center;
+    }
+}
+
+/* Tab System */
+.tab-btn.active {
+    background: #0066FF;
+    color: white;
+}
+
+.tab-content {
+    animation: fade-in-up 0.5s ease-out;
+}
+
+.tab-content.hidden {
+    display: none;
+}
+
+/* Hover Effects */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 102, 255, 0.3);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .orbit-item[data-orbit="1"],
+    .orbit-item[data-orbit="2"],
+    .orbit-item[data-orbit="3"],
+    .orbit-item[data-orbit="4"],
+    .orbit-item[data-orbit="5"] {
+        animation: orbit 15s linear infinite;
+    }
+
+    .orbit-item {
+        transform: rotate(0deg) translateX(120px) rotate(0deg) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .orbit-item {
+        transform: rotate(0deg) translateX(90px) rotate(0deg) !important;
+    }
+}
+
+/* Loading States */
+.skeleton {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Focus States for Accessibility */
+a:focus,
+button:focus {
+    outline: 2px solid #0066FF;
+    outline-offset: 2px;
+}
+
+/* Privacy Tier Color Transitions */
+.tier-transition {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Code Block Styling */
+pre {
+    overflow-x: auto;
+}
+
+code {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Modal Animations */
+#demo-modal {
+    animation: fade-in 0.3s ease-out;
+}
+
+#demo-modal > div {
+    animation: fade-in-up 0.3s ease-out;
+}
