@@ -26,6 +26,7 @@ jobs:
           publish_dir: ./landing
           publish_branch: gh-pages
           force_orphan: true
+          exclude_assets: '.github,backend,config,src,*.md,!landing/*.md'
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           commit_message: 'Deploy landing page from ${{ github.sha }}'
@@ -33,6 +34,7 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "✅ Landing page deployed to gh-pages branch"
-          echo "🌐 Visit: https://SharminSirajudeen.github.io/brane_v2/"
-          echo "⚙️  Enable GitHub Pages at: https://github.com/${{ github.repository }}/settings/pages"
-          echo "📌 Source: Deploy from branch 'gh-pages' / (root)"
+          echo "🌐 Live at: https://SharminSirajudeen.github.io/brane_v2/"
+          echo ""
+          echo "Deployed files:"
+          ls -la ./landing/
