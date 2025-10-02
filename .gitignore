@@ -35,6 +35,15 @@ axon_storage/
 *.faiss
 *.pickle
 
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite
+*.sqlite3
+
 # Test coverage
 coverage/
 *.lcov
