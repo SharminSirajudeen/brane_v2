@@ -89,7 +89,13 @@
 ## 🐛 Blockers
 
 ### Current Blockers
-- None yet (waiting for sessions to start)
+- 🔴 **CRITICAL: No space left on device**
+  - Discovered during pip install in venv
+  - Impact: Cannot install backend dependencies
+  - Options:
+    1. **Use GitHub Codespaces** (recommended for both sessions)
+    2. Clean up local disk space
+    3. Frontend-only local development (backend in cloud)
 
 ### Potential Blockers
 - ⚠️ Google OAuth credentials (need to set up in Google Cloud Console)
