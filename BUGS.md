@@ -32,17 +32,22 @@
 
 ---
 
-### Bug #2: Database Not Initialized
-- **Status**: Open
-- **Discovered by**: Architecture analysis
+### Bug #2: Database Model Error - 'metadata' Reserved Name
+- **Status**: ✅ Fixed
+- **Discovered by**: Backend session (during alembic upgrade)
 - **Priority**: 🔴 Critical
 - **Assigned to**: Backend session
-- **Symptom**: Backend crashes with "table does not exist" errors
-- **Location**: No SQLite database file exists
-- **Impact**: Backend cannot start
-- **Fix**: Run `alembic upgrade head` to create tables
-- **ETA**: 10 minutes
-- **Dependencies**: Bug #1 must be fixed first (needs .env)
+- **Symptom**: SQLAlchemy error: "Attribute name 'metadata' is reserved when using the Declarative API"
+- **Location**: `backend/db/models.py:200` (Document class)
+- **Impact**: Database migrations fail, backend cannot start
+- **Root Cause**: Document model has column named `metadata` which conflicts with SQLAlchemy's reserved attribute
+- **Fix Applied**: Renamed attribute to `doc_metadata` while keeping column name as "metadata"
+  - Changed: `metadata = Column(JSON...)`
+  - To: `doc_metadata = Column("metadata", JSON...)`
+- **Additional Fixes**:
+  - Fixed `DEFAULT_PRIVACY_TIER` type mismatch (Literal to int with validation)
+  - Installed missing `greenlet` dependency for async SQLAlchemy
+- **Fixed in commit**: [Next commit]
 
 ---
 

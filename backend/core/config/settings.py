@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     )
 
     # Privacy
-    DEFAULT_PRIVACY_TIER: Literal[0, 1, 2] = 0  # 0=local, 1=private cloud, 2=public
+    DEFAULT_PRIVACY_TIER: int = Field(default=0, ge=0, le=2, description="0=local, 1=private cloud, 2=public")
 
     # File Storage
     STORAGE_PATH: str = "./storage"

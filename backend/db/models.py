@@ -197,7 +197,7 @@ class Document(Base):
     source = Column(String)  # file path, URL, etc.
 
     # Metadata
-    metadata = Column(JSON, default=dict)  # Custom metadata
+    doc_metadata = Column("metadata", JSON, default=dict)  # Custom metadata (column name "metadata", attribute name "doc_metadata")
     privacy_tier = Column(Enum(PrivacyTier), nullable=False)
 
     # Embedding info
