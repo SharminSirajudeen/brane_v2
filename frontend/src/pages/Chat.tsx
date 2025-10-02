@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Settings as SettingsIcon } from 'lucide-react'
+import { ArrowLeft, Settings as SettingsIcon, FileText } from 'lucide-react'
 import { neuronsAPI } from '../api/neurons'
 import { useChatStream } from '../hooks/useChatStream'
 import Message from '../components/chat/Message'
@@ -99,6 +99,13 @@ export default function Chat() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(`/documents/${neuronId}`)}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+            title="Document Library"
+          >
+            <FileText size={20} />
+          </button>
           <button
             onClick={() => navigate(`/settings/${neuronId}`)}
             className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
