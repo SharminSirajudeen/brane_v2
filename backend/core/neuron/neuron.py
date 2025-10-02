@@ -13,6 +13,7 @@ from enum import Enum
 from core.llm.broker import LLMBroker
 from core.axon.axon import Axon
 from core.synapse.synapse import Synapse
+from core.neuron.memory_consolidator import MemoryConsolidator
 from db.models import PrivacyTier
 
 logger = logging.getLogger(__name__)
@@ -129,6 +130,7 @@ class Neuron:
         self.axon: Optional[Axon] = None
         self.synapses: List[Synapse] = []
         self.memory = HierarchicalMemory()
+        self.consolidator: Optional[MemoryConsolidator] = None
 
         logger.info(f"Neuron '{self.name}' created (ID: {self.id}, Tier: {self.privacy_tier})")
 
@@ -154,6 +156,15 @@ class Neuron:
                 if tool_config.get("enabled"):
                     # TODO: Load synapse plugins dynamically
                     logger.debug(f"Synapse '{tool_config.get('id')}' registered")
+
+            # 4. Memory Consolidator (anti-degradation)
+            consolidation_config = self.config.get("consolidation", {})
+            self.consolidator = MemoryConsolidator(
+                neuron=self,
+                consolidation_threshold=consolidation_config.get("threshold", 100),
+                max_l2_size=consolidation_config.get("max_l2_size", 50)
+            )
+            logger.info(f"Neuron '{self.name}': Memory consolidator initialized")
 
             logger.info(f"Neuron '{self.name}' fully initialized")
 
@@ -232,6 +243,15 @@ class Neuron:
                 }
             )
 
+            # 7. Check if consolidation needed (anti-degradation)
+            if self.consolidator:
+                self.consolidator.record_interaction()
+
+                if self.consolidator.should_consolidate():
+                    logger.info(f"Neuron '{self.name}': Triggering memory consolidation")
+                    # Run consolidation in background (don't block response)
+                    asyncio.create_task(self._run_consolidation())
+
             self.state = NeuronState.IDLE
             logger.info(f"Neuron '{self.name}': Chat completed")
 
@@ -239,6 +259,14 @@ class Neuron:
             self.state = NeuronState.ERROR
             logger.error(f"Neuron '{self.name}' chat error: {e}")
             yield f"\n\n[Error: {str(e)}]"
+
+    async def _run_consolidation(self):
+        """Run memory consolidation in background"""
+        try:
+            stats = await self.consolidator.consolidate()
+            logger.info(f"Neuron '{self.name}': Consolidation stats: {stats}")
+        except Exception as e:
+            logger.error(f"Neuron '{self.name}': Consolidation failed: {e}")
 
     def _build_prompt(
         self,

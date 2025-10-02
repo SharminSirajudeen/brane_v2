@@ -13,16 +13,29 @@ from db.models import Base
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-# Convert postgresql:// to postgresql+asyncpg://
-DATABASE_URL = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+# Handle different database drivers
+if settings.DATABASE_URL.startswith("sqlite"):
+    # SQLite uses aiosqlite driver
+    DATABASE_URL = settings.DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://")
+    engine_kwargs = {
+        "echo": settings.DEBUG,
+        "connect_args": {"check_same_thread": False},  # SQLite specific
+    }
+elif settings.DATABASE_URL.startswith("postgresql"):
+    # PostgreSQL uses asyncpg driver
+    DATABASE_URL = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+    engine_kwargs = {
+        "echo": settings.DEBUG,
+        "poolclass": NullPool if settings.ENVIRONMENT == "test" else None,
+        "pool_pre_ping": True,
+    }
+else:
+    # Default fallback
+    DATABASE_URL = settings.DATABASE_URL
+    engine_kwargs = {"echo": settings.DEBUG}
 
 # Create async engine
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=settings.DEBUG,
-    poolclass=NullPool if settings.ENVIRONMENT == "test" else None,
-    pool_pre_ping=True,
-)
+engine = create_async_engine(DATABASE_URL, **engine_kwargs)
 
 # Session factory
 async_session_maker = async_sessionmaker(

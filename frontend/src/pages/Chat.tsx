@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Settings as SettingsIcon } from 'lucide-react'
 import { neuronsAPI } from '../api/neurons'
 import { useChatStream } from '../hooks/useChatStream'
 import Message from '../components/chat/Message'
@@ -98,7 +98,16 @@ export default function Chat() {
             <p className="text-sm text-gray-400">{neuron.description}</p>
           </div>
         </div>
-        <PrivacyBadge tier={neuron.privacy_tier} />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(`/settings/${neuronId}`)}
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+            title="Model Settings"
+          >
+            <SettingsIcon size={20} />
+          </button>
+          <PrivacyBadge tier={neuron.privacy_tier} />
+        </div>
       </div>
 
       {/* Messages */}

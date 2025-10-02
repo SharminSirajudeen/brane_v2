@@ -5,6 +5,7 @@ import { useAuthStore } from './stores/authStore'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Chat from './pages/Chat'
+import Settings from './pages/Settings'
 
 // Create QueryClient instance
 const queryClient = new QueryClient({
@@ -48,6 +49,7 @@ function App() {
           <Route element={<RequireAuth />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/chat/:neuronId" element={<Chat />} />
+            <Route path="/settings/:neuronId" element={<Settings />} />
           </Route>
 
           {/* 404 redirect */}
