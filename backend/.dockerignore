@@ -1,0 +1,306 @@
+# =============================================================================
+# .dockerignore - Exclude files from Docker build context
+# Purpose: Reduce build context size and prevent sensitive data in images
+# Impact: Faster builds (less data to send to Docker daemon)
+# =============================================================================
+
+# =============================================================================
+# PYTHON RUNTIME FILES
+# =============================================================================
+
+# __pycache__: Python bytecode cache directories
+# Why: Generated at runtime, not needed in image (wastes space)
+# Size impact: ~5-20MB depending on codebase size
+__pycache__/
+*/__pycache__/
+**/__pycache__/
+
+# *.pyc, *.pyo: Compiled Python files
+# Why: Generated from .py files, redundant in image
+# Note: Dockerfile sets PYTHONDONTWRITEBYTECODE=1 to prevent creation
+*.pyc
+*.pyo
+
+# *.pyd: Python extension modules (Windows)
+# Why: Platform-specific, not needed in Linux containers
+*.pyd
+
+# .Python: Python virtual environment marker
+# Why: Virtual environments should not be copied (we create one in Dockerfile)
+.Python
+
+# =============================================================================
+# VIRTUAL ENVIRONMENTS
+# =============================================================================
+
+# Python virtual environment directories
+# Why: We install packages fresh in Dockerfile, don't need local venv
+# Size impact: 200-500MB if included (massive waste)
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.env/
+
+# pipenv virtual environment
+Pipfile.lock
+.venv
+
+# Poetry virtual environment
+poetry.lock
+.venv
+
+# =============================================================================
+# ENVIRONMENT & SECRETS
+# =============================================================================
+
+# .env: Environment variables file (CRITICAL: contains secrets)
+# Why: DATABASE_URL, API keys, JWT secrets must NEVER be in image
+# Security: Prevents accidental exposure of credentials
+# Usage: Set via `fly secrets set` instead
+.env
+.env.*
+!.env.example
+
+# .env.example: Template for env vars (OK to include for documentation)
+# Why: Shows what variables are needed, contains no real secrets
+# Note: !.env.example overrides the .env.* exclusion above
+
+# =============================================================================
+# GIT & VERSION CONTROL
+# =============================================================================
+
+# .git: Git repository metadata
+# Why: Not needed at runtime, contains full repo history
+# Size impact: 10-100MB+ depending on repo history
+.git/
+.gitignore
+.gitattributes
+
+# .github: GitHub workflows and config
+# Why: CI/CD configs not needed in production image
+.github/
+
+# =============================================================================
+# DEVELOPMENT & TESTING
+# =============================================================================
+
+# Test files and directories
+# Why: Tests run in CI, not needed in production image
+# Size impact: 5-50MB depending on test suite
+tests/
+test/
+*_test.py
+test_*.py
+*.test.py
+
+# pytest cache
+# Why: Generated during test runs, not needed in image
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Coverage reports
+# Why: Test artifacts, not needed at runtime
+coverage/
+*.cover
+.hypothesis/
+.coverage.*
+
+# =============================================================================
+# IDE & EDITOR FILES
+# =============================================================================
+
+# Visual Studio Code
+# Why: Editor configuration, not needed in image
+.vscode/
+*.code-workspace
+
+# PyCharm / IntelliJ
+# Why: IDE project files, not needed in image
+.idea/
+*.iml
+
+# Vim
+# Why: Temporary editor files
+*.swp
+*.swo
+*~
+
+# Emacs
+# Why: Temporary editor files
+*~
+\#*\#
+.\#*
+
+# Sublime Text
+# Why: Editor project files
+*.sublime-project
+*.sublime-workspace
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+
+# Markdown documentation (optional: remove if you want docs in image)
+# Why: README, docs not needed at runtime (reduces image size)
+# Note: Comment out if you want to serve docs from the API
+*.md
+!README.md
+docs/
+doc/
+
+# Sphinx documentation
+# Why: Generated docs, not needed in image
+_build/
+*.rst
+
+# =============================================================================
+# BUILD ARTIFACTS
+# =============================================================================
+
+# Egg info: Python package metadata
+# Why: Generated during `pip install`, not needed in final image
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Wheel files
+# Why: Distribution packages, not needed at runtime
+*.whl
+
+# =============================================================================
+# OPERATING SYSTEM FILES
+# =============================================================================
+
+# macOS
+# Why: Finder metadata, not needed in Linux container
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+# Why: Windows-specific files, not needed in Linux container
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+# Why: Temporary system files
+.directory
+.Trash-*
+
+# =============================================================================
+# LOGS & TEMPORARY FILES
+# =============================================================================
+
+# Log files
+# Why: Old logs not needed in new container
+*.log
+logs/
+log/
+
+# Temporary files
+# Why: Cached or temporary data, regenerated at runtime
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# =============================================================================
+# DATABASE FILES (Local Development)
+# =============================================================================
+
+# SQLite databases
+# Why: Development databases, production uses Neon PostgreSQL
+*.db
+*.sqlite
+*.sqlite3
+
+# Database dumps
+# Why: Local backups, not needed in image
+*.sql
+*.dump
+
+# =============================================================================
+# DOCKER FILES (Prevent Recursion)
+# =============================================================================
+
+# Dockerfile: Prevent copying Dockerfile into itself
+# Why: Not needed at runtime, only for building
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# =============================================================================
+# FLY.IO & DEPLOYMENT
+# =============================================================================
+
+# fly.toml: Fly.io configuration
+# Why: Used by Fly CLI, not needed inside container
+fly.toml
+
+# Railway config
+# Why: Alternative deployment platform config
+railway.json
+
+# =============================================================================
+# STORAGE DIRECTORIES (Ephemeral in Container)
+# =============================================================================
+
+# Local storage directories
+# Why: User uploads and models are created at runtime
+# Note: Dockerfile creates these directories empty
+# Copying local data would include development files
+storage/
+axon_storage/
+models/
+
+# =============================================================================
+# PRIVATE KEYS & CERTIFICATES
+# =============================================================================
+
+# SSH keys
+# Why: NEVER include private keys in images (security risk)
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# SSL certificates (unless explicitly needed for app)
+# Why: Fly.io handles TLS termination, app uses HTTP internally
+ssl/
+certs/
+
+# =============================================================================
+# NODE.JS (If Using Frontend Tooling)
+# =============================================================================
+
+# Node modules (if you use npm for tooling)
+# Why: JavaScript deps not needed in Python backend
+node_modules/
+package-lock.json
+yarn.lock
+
+# =============================================================================
+# SUMMARY
+# =============================================================================
+# This .dockerignore file:
+# - Reduces build context from ~500MB to ~10MB (50x smaller!)
+# - Prevents secrets (.env, keys) from being copied to image
+# - Excludes development files (tests, docs, IDE configs)
+# - Speeds up Docker builds (less data to transfer to daemon)
+# - Improves security (no credentials, no source history)
+#
+# Result: Faster builds, smaller images, better security
+# =============================================================================
