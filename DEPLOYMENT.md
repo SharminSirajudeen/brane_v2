@@ -10,7 +10,7 @@ Complete guide to deploy BRANE backend and frontend to production.
 
 **1. Click to Deploy:**
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/brane-v2?referralCode=BRANE)
 
 **2. Connect GitHub:**
 - Login to Railway with GitHub

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "name": "BRANE - Privacy-First AI Agent Platform",
+  "description": "Deploy BRANE backend with tools system (SSH, HTTP, MCP integration)",
+  "plugins": [
+    {
+      "name": "PostgreSQL",
+      "plan": "hobby"
+    }
+  ],
+  "env": {
+    "SECRET_KEY": {
+      "description": "Secret key for JWT tokens (generate with: openssl rand -hex 32)",
+      "generate": true
+    },
+    "GOOGLE_CLIENT_ID": {
+      "description": "Google OAuth Client ID from Google Cloud Console",
+      "required": true
+    },
+    "GOOGLE_CLIENT_SECRET": {
+      "description": "Google OAuth Client Secret from Google Cloud Console",
+      "required": true
+    },
+    "CORS_ORIGINS": {
+      "description": "Allowed CORS origins (comma-separated)",
+      "default": "https://sharminsirajudeen.github.io,http://localhost:5173"
+    },
+    "OPENAI_API_KEY": {
+      "description": "OpenAI API Key (optional - for cloud LLMs)",
+      "required": false
+    },
+    "ANTHROPIC_API_KEY": {
+      "description": "Anthropic API Key (optional - for Claude)",
+      "required": false
+    }
+  }
+}
