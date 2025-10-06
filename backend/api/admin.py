@@ -15,9 +15,13 @@ router = APIRouter()
 
 @router.get("/users")
 async def list_users(
-    user: User = Depends(require_role(UserRole.ADMIN)),
-    db: AsyncSession = Depends(get_db_session)
+    db: AsyncSession = Depends(get_db_session),
+    user: User = Depends(get_current_user)
 ):
+    # Check admin role
+    if user.role != UserRole.ADMIN:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="Admin access required")
     """List all users (admin only)"""
     result = await db.execute(select(User))
     users = result.scalars().all()

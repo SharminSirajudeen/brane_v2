@@ -217,8 +217,18 @@ class Neuron:
                 user_message=user_message
             )
 
-            # 4. Tool definitions
-            tools = [s.to_mcp_format() for s in self.synapses]
+            # 4. Tool definitions (LangChain + MCP)
+            from api.tools import get_tools_for_llm
+            langchain_tools = await get_tools_for_llm(self.config)
+
+            # Convert LangChain tools to MCP format for LiteLLM
+            tools = []
+            for lc_tool in langchain_tools:
+                tools.append({
+                    "name": lc_tool.name,
+                    "description": lc_tool.description,
+                    "parameters": lc_tool.args if hasattr(lc_tool, 'args') else {}
+                })
 
             # 5. LLM call (streaming)
             max_tokens = self.config.get("max_tokens", 2048)

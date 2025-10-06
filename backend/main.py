@@ -11,7 +11,7 @@ import logging
 import time
 from typing import AsyncIterator
 
-from api import auth, neurons, chat, rag, admin
+from api import auth, neurons, chat, rag, admin, tools
 from core.config.settings import get_settings
 from db.database import init_db
 
@@ -132,6 +132,7 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(neurons.router, prefix="/api/neurons", tags=["Neurons"])
 app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
 app.include_router(rag.router, prefix="/api/rag", tags=["RAG"])
+app.include_router(tools.router, prefix="/api", tags=["Tools"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 
 
