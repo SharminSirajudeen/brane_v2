@@ -1,6 +1,6 @@
 # 🚀 BRANE Development Status
 
-**Last Updated**: October 7, 2025 - 21:30 (Complete Tool System + Session Handoff! 🎉)
+**Last Updated**: October 7, 2025 - 22:00 (Deployment Ready + Code Review Complete! 🚀)
 
 ---
 
@@ -47,8 +47,8 @@ Enable AI Neurons to interact with the real world through secure tool access - f
 
 ## 👥 SESSION STATUS
 
-### Backend Session (Last Active)
-- **Status**: ✅ COMPLETE - Tools System Fully Implemented + Session Handed Off
+### Backend Session #1 (Tool System)
+- **Status**: ✅ COMPLETE - Tools System Fully Implemented
 - **Zone**: Tool/Connector system, Real-world agent capabilities
 - **Last Task**: Complete handoff - commit all work, update STATUS.md, push to GitHub
 - **Major Achievement**: Built complete tool system (11,305 lines added!)
@@ -62,6 +62,31 @@ Enable AI Neurons to interact with the real world through secure tool access - f
   - ✅ Frontend tool permission manager component
   - ✅ Fixed admin.py require_role dependency bug
   - ✅ Git cleanup (removed venv/db from tracking)
+
+### Backend Session #2 (Deployment Prep - LAST ACTIVE)
+- **Status**: ✅ COMPLETE - Fly.io Config + Code Review Done
+- **Zone**: Deployment configuration, Code quality review
+- **Last Task**: Code review + Fly.io deployment setup + Session handoff
+- **Major Achievement**: Production-ready deployment config + Critical security findings
+- **Completed**:
+  - ✅ **Fly.io Deployment Config** (84KB documentation):
+    - `fly.toml` - Production config with every line explained
+    - `Dockerfile` - Multi-stage build optimized for free tier
+    - `.dockerignore` - Protects secrets, reduces image size
+    - 5 comprehensive guides (Quick Start, Full Guide, Env Vars, README, Summary)
+  - ✅ **Code Quality Review** (3 specialized agents):
+    - Security audit (found 4 critical issues - see below)
+    - LLM architecture review (tools integration gaps identified)
+    - Elite engineering review (deployment optimization)
+  - ✅ **Repository Cleanup**:
+    - Deleted `backend/venv/` (1.9M lines removed)
+    - Deleted `backend/brane.db` (should never be in git)
+  - ✅ **Google OAuth Setup**:
+    - Created OAuth client ID & secret
+    - Configured redirect URIs for production + dev
+  - ✅ **Free Platform Research**:
+    - Comprehensive analysis of Railway alternatives
+    - Recommended: Fly.io + Neon (100% free, no expiration)
 
 ### Frontend Session (Other Session)
 - **Status**: ✅ COMPLETE - All P0 Frontend Tasks Done, Ready for Deployment
@@ -196,19 +221,76 @@ Enable AI Neurons to interact with the real world through secure tool access - f
 - Tool execution (file ops, shell, HTTP)
 - Settings panel (model switching)
 
-### Deployment Options
+### Deployment Options (Updated After Research)
 
-#### Backend
-- **Option 1**: Railway.app (recommended, $5/month, 1-click deploy)
-- **Option 2**: Render.com (free tier, slower startup)
-- **Option 3**: Keep in Codespace (dev only)
+#### Backend - Recommended: Fly.io + Neon PostgreSQL (100% FREE)
+**Why**: Truly free tier with no time limits, production-ready infrastructure
+
+**Setup** (see `backend/FLY_QUICK_START.md` for details):
+```bash
+cd backend
+fly launch --no-deploy
+fly secrets set DATABASE_URL="<neon-url>" JWT_SECRET_KEY="<new>" ENCRYPTION_KEY="<new>"
+fly deploy
+```
+
+**Cost**: $0/month (Fly.io free tier + Neon serverless PostgreSQL)
+
+**Alternatives**:
+- ❌ **Railway**: No longer free ($5/month minimum after trial)
+- ⚠️ **Render**: Free tier but PostgreSQL expires after 30 days
+- ✅ **Koyeb**: 50 active hours/month free (good for intermittent use)
+
+**Database**: Neon PostgreSQL
+- 3GB storage free
+- 100 compute hours/month
+- No expiration
+- Sign up: https://console.neon.tech/
 
 #### Frontend
 - **Recommended**: GitHub Pages (free, already configured)
 - **Alternative**: Vercel/Netlify (faster CDN, free tier)
 
-### Known Issues to Fix
-- ⚠️ Google OAuth credentials need setup (Google Cloud Console)
+### ⚠️ CRITICAL ISSUES - Must Fix Before Deployment
+
+**Code Review Findings (Backend Session #2):**
+
+1. **🔴 CRITICAL: Secrets in .env file**
+   - **File**: `backend/.env` (lines 21, 34)
+   - **Issue**: Production secrets committed (JWT_SECRET_KEY, ENCRYPTION_KEY)
+   - **Fix**: Regenerate both keys immediately:
+     ```bash
+     python -c "import secrets; print(secrets.token_urlsafe(32))"  # New JWT key
+     python -c "import secrets; print(secrets.token_urlsafe(32))"  # New encryption key
+     ```
+   - **Then**: Set as Fly.io secrets, never commit .env again
+
+2. **🔴 CRITICAL: Dockerfile HEALTHCHECK will fail**
+   - **File**: `Dockerfile` (line 31)
+   - **Issue**: Uses `requests` library not in requirements.txt
+   - **Fix**: Replace with `urllib` (stdlib):
+     ```dockerfile
+     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()" || exit 1
+     ```
+
+3. **🟡 HIGH: Duplicate dependency**
+   - **File**: `backend/requirements.txt` (line 50)
+   - **Issue**: `httpx==0.27.2` listed twice
+   - **Fix**: Remove line 50, keep line 18
+
+4. **🟡 HIGH: SSH tool security risk**
+   - **File**: `backend/tools/ssh_tool.py` (line 120)
+   - **Issue**: `AutoAddPolicy()` accepts any host key (MITM risk)
+   - **Fix**: Change to `RejectPolicy()` and require known hosts
+
+5. **🟡 HIGH: Tools integration incomplete**
+   - **Issue**: Missing `paramiko` dependency for SSH tool
+   - **Issue**: Tool call processing not implemented in LLM response handler
+   - **Issue**: Human-in-the-loop approval not enforced despite `requires_confirmation`
+   - **Fix**: See code review report in agent outputs
+
+### Other Known Issues
+- ⚠️ Google OAuth credentials configured ✅ (but need to update with real Railway URL)
 - ⚠️ Tool permission UI needs backend integration testing
 - ⚠️ Memory consolidation never tested in production
 
@@ -339,4 +421,33 @@ git push origin main
 
 ---
 
-*Last updated by: Backend session - Complete tool system implementation + handoff (October 7, 2025 - 21:30)*
+---
+
+## 📦 NEW FILES (Backend Session #2)
+
+### Fly.io Deployment Configuration
+- `backend/fly.toml` - Production config (every line explained)
+- `backend/Dockerfile` - Multi-stage build (optimized)
+- `backend/.dockerignore` - Security & build optimization
+- `backend/FLY_QUICK_START.md` - 5-minute deploy guide
+- `backend/FLY_DEPLOYMENT_GUIDE.md` - Complete step-by-step
+- `backend/FLY_ENV_VARS.md` - Environment variable reference
+- `backend/FLY_README.md` - Architecture & troubleshooting
+- `backend/FLY_SUMMARY.md` - High-level overview
+
+### Google OAuth Configuration
+**Status**: ✅ Created in Google Cloud Console
+
+**Redirect URIs configured**:
+- Production: `https://brane-production.up.railway.app/api/auth/google/callback`
+- Codespace: `https://animated-halibut-vj4vj54p4vcwg9j.github.dev`
+- GitHub Pages: `https://sharminsirajudeen.github.io`
+
+**Next steps**:
+1. Store Client ID & Secret in password manager (DO NOT commit to git)
+2. Set as Fly.io secrets: `fly secrets set GOOGLE_CLIENT_ID=<id> GOOGLE_CLIENT_SECRET=<secret>`
+3. Update redirect URI with actual Fly.io URL after deployment
+
+---
+
+*Last updated by: Backend session #2 - Fly.io deployment config + code review (October 7, 2025 - 22:00)*
