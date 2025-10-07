@@ -347,9 +347,17 @@ fly deploy
    - **Fix**: See code review report in agent outputs
 
 ### Other Known Issues
-- ⚠️ Google OAuth credentials configured ✅ (but need to update with real Railway URL)
+- ⚠️ Google OAuth credentials configured ✅ (but need to update with real Fly.io URL after deployment)
 - ⚠️ Tool permission UI needs backend integration testing
 - ⚠️ Memory consolidation never tested in production
+- 🔴 **Chat Streaming Authentication**: EventSource passes JWT as query param, backend expects Authorization header
+  - **Fix**: Add backend middleware to accept token from query params OR switch to fetch() with manual stream parsing
+- 🟡 **Settings Test Connection**: Button makes naive fetch to `${baseUrl}/health`, needs backend endpoint
+  - **Fix**: Add `POST /api/neurons/{id}/test-connection` endpoint
+- 🟡 **No RAG Upload UI**: Backend APIs exist, frontend needs document upload page
+- 🟡 **No Chat Session Management UI**: Sessions created in backend, need UI to list/switch/delete
+- ⚪ **No Error Boundaries**: React errors crash entire app
+- ⚪ **No Retry Logic**: Failed API calls don't retry
 
 ---
 
