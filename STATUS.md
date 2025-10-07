@@ -403,21 +403,218 @@ git push origin main
 
 ---
 
-## 🎯 SESSION HANDOFF COMPLETE
+## 🎯 SESSION HANDOFF - START HERE!
 
-**This backend session is now closed.** All work committed and pushed to GitHub.
+**All sessions are closed.** This is your complete project handbook.
 
-**For the next session:**
-1. Read this STATUS.md file (you're doing it! ✅)
-2. Pull latest from GitHub: `git pull origin main`
-3. Choose your path:
-   - **Testing**: Follow "Phase 3: Testing & Deployment" steps above
-   - **Deployment**: Follow "Deployment Options" for Railway/Render
-   - **New Features**: Check GitHub issues or create new Neuron capabilities
+---
 
-**What we built:** A complete local-first AI agent system with real-world tool access, 4-layer memory, RAG, and multi-model support. Neurons can now control files, run commands, call APIs - the foundation for digital & physical world interaction.
+### 📖 Step 1: Read This File (You're doing it! ✅)
 
-**What's next:** Test it, deploy it, let Neurons loose in the real world. 🚀
+This STATUS.md contains everything you need:
+- What BRANE is (lines 7-27)
+- All repository links (lines 30-45)
+- Session status & achievements (lines 48-100)
+- **CRITICAL ISSUES to fix** (lines 235-276)
+- Deployment guides (lines 224-252)
+- Complete file list (lines 253-366)
+
+---
+
+### 🔄 Step 2: Pull Latest Code
+
+```bash
+cd /Users/sharminsirajudeen/Projects/brane_v2
+git pull origin main
+```
+
+**Expected**: Already up to date (commit `5af6934`)
+
+---
+
+### 🎯 Step 3: Choose Your Mission
+
+#### 🔴 Option A: FIX CRITICAL ISSUES FIRST (Recommended)
+
+**Why**: Code has 5 critical security/functionality issues that will break deployment
+
+**Tasks** (30 mins):
+1. **Regenerate secrets** (5 min):
+   ```bash
+   cd backend
+   python -c "import secrets; print('JWT_SECRET_KEY=' + secrets.token_urlsafe(32))"
+   python -c "import secrets; print('ENCRYPTION_KEY=' + secrets.token_urlsafe(32))"
+   # Copy these, save in password manager
+   ```
+
+2. **Fix Dockerfile healthcheck** (2 min):
+   - File: `Dockerfile` line 31
+   - Change: `requests.get(...)` → `urllib.request.urlopen(...)`
+   - See: STATUS.md line 249-255
+
+3. **Remove duplicate httpx** (1 min):
+   - File: `backend/requirements.txt` line 50
+   - Action: Delete line
+
+4. **Fix SSH tool security** (2 min):
+   - File: `backend/tools/ssh_tool.py` line 120
+   - Change: `AutoAddPolicy()` → `RejectPolicy()`
+   - See: STATUS.md line 262-265
+
+5. **Add missing dependency** (1 min):
+   - File: `backend/requirements.txt`
+   - Add: `paramiko==3.4.0`
+
+6. **Commit fixes**:
+   ```bash
+   git add .
+   git commit -m "[BACKEND] Fix 5 critical issues before deployment"
+   git push origin main
+   ```
+
+7. **Update STATUS.md**:
+   - Change line 3: Update timestamp
+   - Update Session Status: Mark Session #3 as "Critical Fixes"
+   - Remove CRITICAL ISSUES section (fixed!)
+
+---
+
+#### 🚀 Option B: DEPLOY TO FLY.IO (After fixing issues)
+
+**Prerequisite**: Option A must be complete ✅
+
+**Time**: 20 mins
+
+**Steps**:
+1. **Setup Neon PostgreSQL** (5 min):
+   ```bash
+   # Go to https://console.neon.tech/
+   # Create new project: "brane-production"
+   # Copy connection string
+   ```
+
+2. **Deploy backend** (10 min):
+   ```bash
+   cd backend
+   fly launch --no-deploy
+   fly secrets set \
+     DATABASE_URL="<neon-postgres-url>" \
+     JWT_SECRET_KEY="<from-step-A1>" \
+     ENCRYPTION_KEY="<from-step-A1>" \
+     GOOGLE_CLIENT_ID="<from-password-manager>" \
+     GOOGLE_CLIENT_SECRET="<from-password-manager>" \
+     DEBUG=false \
+     ENVIRONMENT=production
+   fly deploy
+   ```
+
+3. **Verify deployment**:
+   ```bash
+   curl https://brane-backend.fly.dev/health
+   ```
+
+4. **Update STATUS.md**:
+   - Update deployment status
+   - Add production URLs
+   - Mark deployment section as complete
+
+**Full guide**: `backend/FLY_QUICK_START.md`
+
+---
+
+#### 🧪 Option C: TEST LOCALLY (Quick validation)
+
+**Time**: 15 mins
+
+**In Codespace** (recommended):
+```bash
+cd backend
+pip install -r requirements.txt
+cp .env.example .env
+# Edit .env: Add GOOGLE_CLIENT_ID, OPENAI_API_KEY
+alembic upgrade head
+python main.py
+# Test: curl http://localhost:8000/health
+```
+
+**Update STATUS.md** after testing
+
+---
+
+#### 🎨 Option D: NEW FEATURES
+
+**Prerequisites**: Deployment working ✅
+
+**Ideas**:
+- Add more tools (Database, Cloud, IoT)
+- Improve memory consolidation
+- Add authentication methods
+- Build Electron desktop app
+
+**Process**:
+1. Create feature branch
+2. Implement + test
+3. Update STATUS.md
+4. Submit PR
+
+---
+
+### 📝 Step 4: Update STATUS.md (ALWAYS!)
+
+**Every session must update STATUS.md:**
+
+1. **Update timestamp** (line 3):
+   ```
+   **Last Updated**: [Date] - [Time] ([What you did])
+   ```
+
+2. **Add new session** (after line 89):
+   ```markdown
+   ### Backend Session #3 (Your Name)
+   - **Status**: ✅ COMPLETE - [What you did]
+   - **Zone**: [Your focus area]
+   - **Completed**:
+     - ✅ Task 1
+     - ✅ Task 2
+   ```
+
+3. **Update metrics** (lines 280-310):
+   - Testing %
+   - Deployment %
+   - Any new files
+
+4. **Update "Last updated by"** (line 453):
+   ```
+   *Last updated by: Backend session #3 - [Brief description] ([Date/Time])*
+   ```
+
+5. **Commit STATUS.md**:
+   ```bash
+   git add STATUS.md
+   git commit -m "[SESSION] Update STATUS.md - Session #3 complete"
+   git push origin main
+   ```
+
+---
+
+### ✅ Session Checklist
+
+**Before closing your session:**
+- [ ] All code committed and pushed
+- [ ] STATUS.md updated (timestamp, session, metrics)
+- [ ] No uncommitted changes (`git status` clean)
+- [ ] Critical issues documented or fixed
+- [ ] Next steps clear for next session
+
+---
+
+### 🚀 What We Built
+
+A complete local-first AI agent system with real-world tool access, 4-layer memory, RAG, and multi-model support. Neurons can now control files, run commands, call APIs - the foundation for digital & physical world interaction.
+
+**Stats**: 16,290+ lines of code, 84KB deployment docs, 11,305-line tool system
+
+**What's next**: Fix critical issues → Deploy → Test → Let Neurons loose! 🎉
 
 ---
 
