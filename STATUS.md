@@ -1,6 +1,63 @@
 # 🚀 BRANE Development Status
 
-**Last Updated**: October 7, 2025 - 22:00 (Deployment Ready + Code Review Complete! 🚀)
+**Last Updated**: October 7, 2025 - 22:15 (Final Handoff - Everything Ready! 🚀)
+
+---
+
+## 👤 USER PROFILE & CRITICAL CONSTRAINTS
+
+### About You
+- **Background**: 10+ years engineering experience (Mobile Engineer)
+- **Expertise**: Mobile development, engineering leadership
+- **Gap**: Limited web/backend development knowledge
+- **Communication Style**: Direct, practical, "0 over-engineering, 100% apt-engineering"
+- **Preference**: "I want people to loveeeeeeeeeeee it!"
+
+### 🚨 CRITICAL: Local Machine Constraints
+⚠️ **DO NOT INSTALL ANYTHING ON LOCAL MACHINE** ⚠️
+
+**Issue**: No disk space on local macOS (`/Users/sharminsirajudeen/Projects/brane_v2`)
+- Cannot install Python venv
+- Cannot install npm packages
+- Cannot run backend locally
+
+**Solution**: **Use GitHub Codespace for ALL development**
+- **Codespace URL**: https://animated-halibut-vj4vj54p4vcwg9j.github.dev
+- Everything runs in cloud browser
+- Full Python + Node.js environment pre-installed
+- 60 hours/month free (enough for this project)
+
+### 🎯 What This Means for Next Session
+
+**❌ NEVER do this:**
+```bash
+cd /Users/sharminsirajudeen/Projects/brane_v2/backend
+pip install -r requirements.txt  # ❌ Will fail - no space!
+npm install                       # ❌ Will fail - no space!
+```
+
+**✅ ALWAYS do this instead:**
+```bash
+# Open Codespace: https://animated-halibut-vj4vj54p4vcwg9j.github.dev
+# Then run commands there (they work because cloud has space)
+```
+
+### 📋 Development Workflow
+
+**All work happens in 2 places:**
+
+1. **Local Machine** (macOS):
+   - Read files (STATUS.md, code review)
+   - Git operations (commit, push)
+   - Planning and documentation
+   - ❌ NO installations, NO builds
+
+2. **GitHub Codespace** (Cloud):
+   - Install dependencies
+   - Run backend/frontend
+   - Test code
+   - Build production bundles
+   - ✅ Everything else
 
 ---
 
@@ -438,44 +495,100 @@ git pull origin main
 
 **Why**: Code has 5 critical security/functionality issues that will break deployment
 
-**Tasks** (30 mins):
-1. **Regenerate secrets** (5 min):
+**Time**: 30 mins
+**Where**: Local machine (file edits) + Git push
+**Prerequisites**: None - start immediately!
+
+---
+
+**📋 COPY-PASTE READY SCRIPT:**
+
+Open a terminal on **local machine** and run this ONE command:
+
+```bash
+# Fix all 5 critical issues in one go
+cd /Users/sharminsirajudeen/Projects/brane_v2 && \
+echo "Generating new secrets..." && \
+NEW_JWT=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))") && \
+NEW_ENC=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))") && \
+echo "JWT_SECRET_KEY=$NEW_JWT" && \
+echo "ENCRYPTION_KEY=$NEW_ENC" && \
+echo "⚠️  SAVE THESE IN PASSWORD MANAGER!" && \
+echo "" && \
+echo "Fixing Dockerfile healthcheck..." && \
+sed -i '' 's/import requests; requests.get/import urllib.request; urllib.request.urlopen/g' Dockerfile && \
+sed -i '' "s/CMD python -c \"import requests; requests.get('http:\/\/localhost:8000\/health')\"/CMD python -c \"import urllib.request; urllib.request.urlopen('http:\/\/localhost:8000\/health').read()\" || exit 1/" Dockerfile && \
+echo "Removing duplicate httpx..." && \
+sed -i '' '50d' backend/requirements.txt && \
+echo "Fixing SSH tool security..." && \
+sed -i '' 's/AutoAddPolicy()/RejectPolicy()/g' backend/tools/ssh_tool.py && \
+echo "Adding paramiko dependency..." && \
+echo "paramiko==3.4.0" >> backend/requirements.txt && \
+echo "" && \
+echo "✅ All fixes complete! Review changes with: git diff" && \
+echo "Then commit: git add . && git commit -m '[BACKEND] Fix 5 critical issues' && git push"
+```
+
+**What this does** (no technical knowledge needed):
+1. Generates new random secrets (saves you from typing long commands)
+2. Fixes the Docker health check bug
+3. Removes duplicate library
+4. Fixes SSH security issue
+5. Adds missing library
+
+**After running**:
+1. Copy the `JWT_SECRET_KEY=...` and `ENCRYPTION_KEY=...` lines
+2. Save them in your password manager (1Password, LastPass, etc.)
+3. Review changes: `git diff`
+4. Commit: `git add . && git commit -m "[BACKEND] Fix 5 critical issues" && git push`
+
+---
+
+**OR Manual Step-by-Step** (if script fails):
+
+<details>
+<summary>Click to expand manual instructions</summary>
+
+1. **Generate secrets** (copy output to password manager):
    ```bash
-   cd backend
-   python -c "import secrets; print('JWT_SECRET_KEY=' + secrets.token_urlsafe(32))"
-   python -c "import secrets; print('ENCRYPTION_KEY=' + secrets.token_urlsafe(32))"
-   # Copy these, save in password manager
+   python3 -c "import secrets; print('JWT_SECRET_KEY=' + secrets.token_urlsafe(32))"
+   python3 -c "import secrets; print('ENCRYPTION_KEY=' + secrets.token_urlsafe(32))"
    ```
 
-2. **Fix Dockerfile healthcheck** (2 min):
-   - File: `Dockerfile` line 31
-   - Change: `requests.get(...)` → `urllib.request.urlopen(...)`
-   - See: STATUS.md line 249-255
+2. **Fix Dockerfile** (line 31):
+   - Open: `Dockerfile`
+   - Find: `CMD python -c "import requests; requests.get('http://localhost:8000/health')"`
+   - Replace with: `CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()" || exit 1`
 
-3. **Remove duplicate httpx** (1 min):
-   - File: `backend/requirements.txt` line 50
-   - Action: Delete line
+3. **Fix requirements.txt** (line 50):
+   - Open: `backend/requirements.txt`
+   - Find line 50: `httpx==0.27.2`
+   - Delete that line (keep line 18 which is the same)
 
-4. **Fix SSH tool security** (2 min):
-   - File: `backend/tools/ssh_tool.py` line 120
-   - Change: `AutoAddPolicy()` → `RejectPolicy()`
-   - See: STATUS.md line 262-265
+4. **Fix SSH tool** (line 120):
+   - Open: `backend/tools/ssh_tool.py`
+   - Find line 120: `ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())`
+   - Replace with: `ssh.set_missing_host_key_policy(paramiko.RejectPolicy())`
 
-5. **Add missing dependency** (1 min):
-   - File: `backend/requirements.txt`
-   - Add: `paramiko==3.4.0`
+5. **Add paramiko**:
+   - Open: `backend/requirements.txt`
+   - Add at end: `paramiko==3.4.0`
 
-6. **Commit fixes**:
+6. **Commit**:
    ```bash
    git add .
    git commit -m "[BACKEND] Fix 5 critical issues before deployment"
    git push origin main
    ```
 
-7. **Update STATUS.md**:
-   - Change line 3: Update timestamp
-   - Update Session Status: Mark Session #3 as "Critical Fixes"
-   - Remove CRITICAL ISSUES section (fixed!)
+</details>
+
+---
+
+**Then update STATUS.md**:
+- Line 3: Change timestamp to current date/time
+- After line 97: Add your session info (see template in Step 4 below)
+- Lines 285-326: Delete or mark CRITICAL ISSUES as resolved
 
 ---
 
@@ -484,41 +597,82 @@ git pull origin main
 **Prerequisite**: Option A must be complete ✅
 
 **Time**: 20 mins
+**Where**: GitHub Codespace (cloud)
+**Prerequisites**: Option A fixes committed
 
-**Steps**:
-1. **Setup Neon PostgreSQL** (5 min):
-   ```bash
-   # Go to https://console.neon.tech/
-   # Create new project: "brane-production"
-   # Copy connection string
-   ```
+---
 
-2. **Deploy backend** (10 min):
-   ```bash
-   cd backend
-   fly launch --no-deploy
-   fly secrets set \
-     DATABASE_URL="<neon-postgres-url>" \
-     JWT_SECRET_KEY="<from-step-A1>" \
-     ENCRYPTION_KEY="<from-step-A1>" \
-     GOOGLE_CLIENT_ID="<from-password-manager>" \
-     GOOGLE_CLIENT_SECRET="<from-password-manager>" \
-     DEBUG=false \
-     ENVIRONMENT=production
-   fly deploy
-   ```
+**📋 COPY-PASTE READY SCRIPT (Run in Codespace):**
 
-3. **Verify deployment**:
-   ```bash
-   curl https://brane-backend.fly.dev/health
-   ```
+**Step 1**: Open Codespace
+- Go to: https://animated-halibut-vj4vj54p4vcwg9j.github.dev
+- Wait for it to load (opens VSCode in browser)
+- Open terminal in Codespace (Terminal → New Terminal)
 
-4. **Update STATUS.md**:
-   - Update deployment status
-   - Add production URLs
-   - Mark deployment section as complete
+**Step 2**: Setup Neon PostgreSQL (5 mins)
+1. Open: https://console.neon.tech/
+2. Click "Create Project"
+3. Name: `brane-production`
+4. Copy the connection string (starts with `postgresql://`)
+5. Save it somewhere temporarily
 
-**Full guide**: `backend/FLY_QUICK_START.md`
+**Step 3**: Run this ONE command in Codespace terminal:
+
+```bash
+# Deploy BRANE to Fly.io (run this in Codespace terminal)
+cd /workspaces/brane_v2/backend && \
+echo "📦 Installing Fly.io CLI..." && \
+curl -L https://fly.io/install.sh | sh && \
+export FLYCTL_INSTALL="$HOME/.fly" && \
+export PATH="$FLYCTL_INSTALL/bin:$PATH" && \
+echo "🚀 Launching Fly.io app..." && \
+fly launch --name brane-backend --region ord --no-deploy && \
+echo "" && \
+echo "⚠️  NOW YOU NEED TO SET SECRETS!" && \
+echo "Run these commands ONE BY ONE (replace <values>):" && \
+echo "" && \
+echo "fly secrets set DATABASE_URL='<paste-neon-url-here>'" && \
+echo "fly secrets set JWT_SECRET_KEY='<from-password-manager>'" && \
+echo "fly secrets set ENCRYPTION_KEY='<from-password-manager>'" && \
+echo "fly secrets set GOOGLE_CLIENT_ID='<from-password-manager>'" && \
+echo "fly secrets set GOOGLE_CLIENT_SECRET='<from-password-manager>'" && \
+echo "fly secrets set DEBUG=false ENVIRONMENT=production" && \
+echo "" && \
+echo "Then deploy: fly deploy"
+```
+
+**Step 4**: Set secrets (copy-paste from your password manager)
+
+Replace `<values>` with real values:
+```bash
+fly secrets set DATABASE_URL='postgresql://user:pass@host/db'
+fly secrets set JWT_SECRET_KEY='your-jwt-key-from-option-a'
+fly secrets set ENCRYPTION_KEY='your-enc-key-from-option-a'
+fly secrets set GOOGLE_CLIENT_ID='481641...'
+fly secrets set GOOGLE_CLIENT_SECRET='GOCSPX-...'
+fly secrets set DEBUG=false ENVIRONMENT=production
+```
+
+**Step 5**: Deploy!
+```bash
+fly deploy
+```
+
+**Step 6**: Test it works
+```bash
+curl https://brane-backend.fly.dev/health
+```
+
+**Expected**: `{"status":"ok","version":"0.1.0","environment":"production"}`
+
+---
+
+**If you get stuck**: See detailed guide in `backend/FLY_QUICK_START.md`
+
+**After successful deployment**:
+1. Update STATUS.md with production URL
+2. Update Google OAuth redirect URI (replace Railway URL with Fly.io URL)
+3. Test login from frontend
 
 ---
 
