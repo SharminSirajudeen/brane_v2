@@ -192,7 +192,7 @@ brane_v2/
 
 ### Documentation
 - **Architecture**: 100% (see RandD.md) ✅
-- **Code Audit**: 100% (see CODE_AUDIT.md) ✅
+- **Code Audit**: 100% (see below in this file) ✅
 - **User Guides**: 0%
 - **API Docs**: 0%
 - **Video Tutorials**: 0%
@@ -220,6 +220,49 @@ brane_v2/
 - Docker MCP gateway (v2.0 tool expansion)
 - Vision models integration (v2.0 feature)
 - Multi-agent workflows (v2.0 feature)
+
+---
+
+## 🔍 Code Audit Findings (Jan 25, 2025)
+
+**Analyzed**: 46 backend files (9,232 lines) + 27 frontend files (1,934 lines) = 11,166 total lines
+
+### Key Findings (Non-Destructive)
+
+**1. Duplicate LLM Tool Integration** 🔴 HIGH
+- `backend/core/llm_tool_integration.py` (452 lines)
+- `backend/core/llm_tools_bridge.py` (331 lines)
+- **Issue**: Same function `tool_to_openai_function()` in both files
+- **Fix**: Merge into one file → Save 50% (400 lines vs 783)
+
+**2. PostgreSQL Models Unused** 🟡 MEDIUM
+- Desktop app uses SQLite, not PostgreSQL
+- `models/tool_system.py` + `schemas/tool_system.py` = duplicate
+- **Fix**: Archive `models/` to `backend/archive/` (keep for cloud sync later)
+
+**3. Heavy Dependencies** 🔴 HIGH
+- Current: 30+ packages, ~1.2GB
+- Desktop needs: 12 packages, ~400MB
+- **Unnecessary**: FastAPI, Uvicorn, psycopg2, asyncpg, redis, authlib (800MB)
+- **Fix**: Create `requirements-desktop.txt` with essentials only
+
+**4. Duplicate HTTP Tools** 🟡 MEDIUM
+- `http_tool.py` vs `builtin/web_request.py` - same functionality
+- **Fix**: Merge into one implementation
+
+**5. Premature Features** 🟢 LOW
+- SSH tool (Week 4+), MCP adapter (Week 4), Auth system (cloud only)
+- **Fix**: Move to `backend/future/` (preserve, don't delete)
+
+### Consolidation Impact
+
+**Before**: 46 backend files, 30+ deps, 1.2GB, High complexity
+**After**: ~30 files, 12 deps, 400MB, Medium complexity
+**Savings**: -3,166 lines, -800MB, -30% complexity
+
+### Strategy: "Archive, don't delete. Simplify, don't destroy."
+
+**Action**: Optional - can consolidate now (2 hours) OR proceed to Electron and refactor later
 
 ---
 
@@ -308,7 +351,7 @@ git push origin main
 
 ---
 
-**Last Session**: Code audit complete (Jan 25, 2025) - see CODE_AUDIT.md
+**Last Session**: Code audit complete (Jan 25, 2025) - see "Code Audit Findings" section
 **Next Session**: Review audit → Start consolidation OR proceed with Electron setup
 
 ---
